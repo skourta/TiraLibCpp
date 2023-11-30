@@ -9,3 +9,6 @@ include/hermes_ii/functions.h
 include/hermes_ii/switches.h
 src/switchMap.cpp
 **/__pycache__
+sing
+outputs
+install

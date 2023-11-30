@@ -17,6 +17,7 @@ enum Operation
 {
     legality = 0,
     execution = 1,
+    annotations = 2,
 };
 
 struct Result
@@ -42,9 +43,15 @@ bool apply_actions_from_schedule_str(std::string schedule_str, tiramisu::functio
 
 bool isSingleQuoteOrWhiteSpace(char c);
 
-int write_wrapper_from_db(std::string function_name);
+int write_wrapper(std::string function_name);
 
 std::string exec(const char *cmd);
 
 // std::map<std::string, std::function<Result(std::string, Operation)>> createFuncMap();
 std::map<int, std::function<Result(std::string, std::string, Operation)>> createSwitchMap();
+
+Operation get_operation_from_string(std::string operation_str);
+
+std::string serialize_result(Result &result);
+
+void schedule_str_to_result_str(std::string function_name, std::string schedule_str, Operation operation, std::vector<tiramisu::buffer *> buffers);
