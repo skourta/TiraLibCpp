@@ -44,23 +44,25 @@ static int callback(void *data, int argc, char **argv, char **azColName)
     return 0;
 }
 
-std::string exec(const char *cmd)
+std::tuple<bool, std::string> exec(const char *cmd)
 {
     std::array<char, 128> buffer;
     std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    // std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    auto pipe = popen(cmd, "r");
     if (!pipe)
     {
         throw std::runtime_error("popen() failed!");
     }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
     {
         result += buffer.data();
     }
-    return result;
+    auto rc = pclose(pipe);
+    return std::make_tuple(rc == 0, result);
 }
 
-bool apply_action(std::string action_str, tiramisu::function *implicit_function)
+bool apply_action(std::string action_str, tiramisu::function *implicit_function, Result &result)
 {
     bool is_legal = true;
     switch (action_str[0])
@@ -164,7 +166,7 @@ bool apply_action(std::string action_str, tiramisu::function *implicit_function)
     {
         // std::cout << "Skewing" << std::endl;
         // parse the string to get the level, the factor and the computations
-        std::string regex_str = "S\\(L(\\d),L(\\d),(\\d+),(\\d+),comps=\\[([\\w', ]*)\\]\\)";
+        std::string regex_str = "S\\(L(\\d),L(\\d),(-?\\d+),(-?\\d+),comps=\\[([\\w', ]*)\\]\\)";
         std::regex re(regex_str);
         std::smatch match;
         std::regex_search(action_str, match, re);
@@ -180,10 +182,45 @@ bool apply_action(std::string action_str, tiramisu::function *implicit_function)
         // std::cout << "factor2: " << factor2 << std::endl;
         // std::cout << "comps: " << comps_str << std::endl;
         auto comps = get_comps(comps_str, implicit_function);
-        for (auto comp : comps)
+        if (factor1 == 0 && factor2 == 0)
         {
-            comp->skew(level1, level2, factor1, factor2);
+            // Get the factors from the skewing solver
+            auto auto_skewing_result = implicit_function->skewing_local_solver(comps, level1, level2, 1);
+
+            // check outer parallelism factors
+            auto outer_factors = std::get<0>(auto_skewing_result);
+            // check if it's not empty
+            if (outer_factors.size() > 0)
+            {
+                factor1 = outer_factors.at(0).first;
+                factor2 = outer_factors.at(0).second;
+            }
+            else
+            {
+                // check the inner parallelism factors
+                auto inner_factors = std::get<1>(auto_skewing_result);
+                // check if it's not empty
+                if (inner_factors.size() > 0)
+                {
+                    factor1 = inner_factors.at(0).first;
+                    factor2 = inner_factors.at(0).second;
+                }
+                else
+                {
+                    // no factors found
+                    is_legal = false;
+                }
+            }
         }
+        if (is_legal)
+        {
+            result.additional_info = "skewing_factors:" + std::to_string(factor1) + "," + std::to_string(factor2);
+            for (auto comp : comps)
+            {
+                comp->skew(level1, level2, factor1, factor2);
+            }
+        }
+
         break;
     }
     case 'F':
@@ -377,7 +414,7 @@ std::vector<tiramisu::computation *> get_comps(std::string comps_str, tiramisu::
     return comps;
 }
 
-bool apply_actions_from_schedule_str(std::string schedule_str, tiramisu::function *implicit_function)
+bool apply_actions_from_schedule_str(std::string schedule_str, tiramisu::function *implicit_function, Result &result)
 {
     std::string delimiter = "|";
     size_t pos = 0;
@@ -388,12 +425,12 @@ bool apply_actions_from_schedule_str(std::string schedule_str, tiramisu::functio
     {
         token = schedule_str.substr(0, pos);
         // std::cout << token << std::endl;
-        is_legal &= apply_action(token, implicit_function);
+        is_legal &= apply_action(token, implicit_function, result);
         schedule_str.erase(0, pos + delimiter.length());
     }
 
     // std::cout << schedule_str << std::endl;
-    is_legal &= apply_action(schedule_str, implicit_function);
+    is_legal &= apply_action(schedule_str, implicit_function, result);
 
     return is_legal;
 }
@@ -491,7 +528,8 @@ std::string serialize_result(Result &result)
     result_str += "\"legality\": " + std::to_string(result.legality) + ",";
     result_str += "\"isl_ast\": \"" + result.isl_ast + "\",";
     result_str += "\"exec_times\": \"" + result.exec_times + "\",";
-    result_str += "\"success\": " + std::to_string(result.success);
+    result_str += "\"success\": " + std::to_string(result.success) + ",";
+    result_str += "\"additional_info\": \"" + result.additional_info + "\"";
     result_str += "}";
     return result_str;
 }
@@ -510,6 +548,8 @@ void schedule_str_to_result_str(std::string function_name, std::string schedule_
         .name = function_name,
         .legality = false,
         .exec_times = "",
+        .additional_info = "",
+        .success = true,
     };
 
     auto implicit_function = global::get_implicit_function();
@@ -518,7 +558,7 @@ void schedule_str_to_result_str(std::string function_name, std::string schedule_
     perform_full_dependency_analysis();
     bool is_legal = true;
 
-    is_legal &= apply_actions_from_schedule_str(schedule_str, implicit_function);
+    is_legal &= apply_actions_from_schedule_str(schedule_str, implicit_function, result);
 
     prepare_schedules_for_legality_checks();
     is_legal &= check_legality_of_function();
@@ -550,14 +590,14 @@ void schedule_str_to_result_str(std::string function_name, std::string schedule_
             };
         }
         // run the wrapper
-        result.exec_times = exec(wrapper_cmd.c_str());
+        auto res_tuple = exec(wrapper_cmd.c_str());
+        result.success = std::get<0>(res_tuple);
+        result.exec_times = std::get<1>(res_tuple);
         // remove new line character
         if (!result.exec_times.empty() && result.exec_times[result.exec_times.length() - 1] == '\n')
         {
             result.exec_times.erase(result.exec_times.length() - 1);
         }
     }
-    result.success = true;
-
     std::cout << serialize_result(result) << std::endl;
 }

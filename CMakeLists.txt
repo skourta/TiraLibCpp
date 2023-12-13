@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(HermesII)
 
-# set(CMAKE_VERBOSE_MAKEFILE on)
+set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(CMAKE_CXX_STANDARD 17)  # or newer
 # set(CMAKE_CXX_STANDARD_REQUIRED YES)

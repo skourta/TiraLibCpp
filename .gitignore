@@ -12,3 +12,4 @@ src/switchMap.cpp
 sing
 outputs
 install
+src/main.cpp
