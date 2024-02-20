@@ -4,18 +4,14 @@ project(HermesII)
 set(CMAKE_VERBOSE_MAKEFILE on)
 
 set(CMAKE_CXX_STANDARD 17)  # or newer
-# set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CMAKE_CXX_EXTENSIONS NO)
 # Flags for Tiramisu
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ldl -g -fno-rtti -lpthread")
 set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS>  <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
 
-# set(ENV_INCLUDES /home/sk10691/.conda/envs/new-main/include)
-
 find_package(ZLIB REQUIRED)
 
 # Halide and Tiramisu
-set(TIRAMISU_ROOT /home/sk10691/tiramisu_new)
 set(HalideInclude ${TIRAMISU_ROOT}/3rdParty/Halide/install/include)
 set(HalideLib ${TIRAMISU_ROOT}/3rdParty/Halide/install/lib64)
 
