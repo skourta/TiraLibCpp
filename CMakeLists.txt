@@ -13,7 +13,12 @@ find_package(ZLIB REQUIRED)
 
 # Halide and Tiramisu
 set(HalideInclude ${TIRAMISU_ROOT}/3rdParty/Halide/install/include)
-set(HalideLib ${TIRAMISU_ROOT}/3rdParty/Halide/install/lib64)
+
+if(EXISTS ${TIRAMISU_ROOT}/3rdParty/Halide/install/lib64)
+    set(HalideLib ${TIRAMISU_ROOT}/3rdParty/Halide/install/lib64)
+else()
+    set(HalideLib ${TIRAMISU_ROOT}/3rdParty/Halide/install/lib)
+endif()
 
 add_subdirectory(src)
 
