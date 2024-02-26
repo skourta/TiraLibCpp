@@ -1,6 +1,5 @@
 .vscode
 build
-tests
 src/functions
 src/switches
 tmp

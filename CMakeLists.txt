@@ -26,10 +26,10 @@ option(BUILD_EXAMPLES "Build examples or not" OFF)
 option(BUILD_TESTS "Build tests or not" OFF)
 
 
-# if(BUILD_TESTS)
-#     message(STATUS "Building tests...")
-#     add_subdirectory(tests)
-# endif()
+if(BUILD_TESTS)
+    message(STATUS "Building tests...")
+    add_subdirectory(tests)
+endif()
 
 if(BUILD_EXAMPLES)
     message(STATUS "Building examples...")

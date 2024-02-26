@@ -4,8 +4,6 @@
 #include <HermesII/utils.h>
 #include <HermesII/dbhelpers.h>
 
-
-
 bool apply_action(std::string action_str, tiramisu::function *implicit_function, Result &result)
 {
     bool is_legal = true;
@@ -248,7 +246,6 @@ bool apply_action(std::string action_str, tiramisu::function *implicit_function,
     return is_legal;
 }
 
-
 bool apply_actions_from_schedule_str(std::string schedule_str, tiramisu::function *implicit_function, Result &result)
 {
     std::string delimiter = "|";
@@ -270,8 +267,7 @@ bool apply_actions_from_schedule_str(std::string schedule_str, tiramisu::functio
     return is_legal;
 }
 
-
-void schedule_str_to_result_str(std::string function_name, std::string schedule_str, Operation operation, std::vector<tiramisu::buffer *> buffers)
+Result schedule_str_to_result(std::string function_name, std::string schedule_str, Operation operation, std::vector<tiramisu::buffer *> buffers)
 {
     if (operation == Operation::annotations)
     {
@@ -279,7 +275,7 @@ void schedule_str_to_result_str(std::string function_name, std::string schedule_
         auto ast = tiramisu::auto_scheduler::syntax_tree(tiramisu::global::get_implicit_function(), {});
         std::string program_json = tiramisu::auto_scheduler::evaluate_by_learning_model::get_program_json(ast);
         std::cout << program_json;
-        return;
+        return Result();
     }
     Result result = {
         .name = function_name,
@@ -336,5 +332,11 @@ void schedule_str_to_result_str(std::string function_name, std::string schedule_
             result.exec_times.erase(result.exec_times.length() - 1);
         }
     }
+    return result;
+}
+
+void schedule_str_to_result_str(std::string function_name, std::string schedule_str, Operation operation, std::vector<tiramisu::buffer *> buffers)
+{
+    auto result = schedule_str_to_result(function_name, schedule_str, operation, buffers);
     std::cout << serialize_result(result) << std::endl;
 }
