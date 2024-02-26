@@ -269,14 +269,6 @@ bool apply_actions_from_schedule_str(std::string schedule_str, tiramisu::functio
 
 Result schedule_str_to_result(std::string function_name, std::string schedule_str, Operation operation, std::vector<tiramisu::buffer *> buffers)
 {
-    if (operation == Operation::annotations)
-    {
-
-        auto ast = tiramisu::auto_scheduler::syntax_tree(tiramisu::global::get_implicit_function(), {});
-        std::string program_json = tiramisu::auto_scheduler::evaluate_by_learning_model::get_program_json(ast);
-        std::cout << program_json;
-        return Result();
-    }
     Result result = {
         .name = function_name,
         .legality = false,
@@ -337,6 +329,14 @@ Result schedule_str_to_result(std::string function_name, std::string schedule_st
 
 void schedule_str_to_result_str(std::string function_name, std::string schedule_str, Operation operation, std::vector<tiramisu::buffer *> buffers)
 {
+    if (operation == Operation::annotations)
+    {
+        auto ast = tiramisu::auto_scheduler::syntax_tree(tiramisu::global::get_implicit_function(), {});
+        std::string program_json = tiramisu::auto_scheduler::evaluate_by_learning_model::get_program_json(ast);
+        std::cout << program_json;
+        return;
+    }
+
     auto result = schedule_str_to_result(function_name, schedule_str, operation, buffers);
     std::cout << serialize_result(result) << std::endl;
 }
