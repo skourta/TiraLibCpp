@@ -309,16 +309,14 @@ Result schedule_str_to_result(std::string function_name, std::string schedule_st
         {
 // if USE_SQLITE is defined, write the wrapper to a file else raise an error
 #ifdef USE_SQLITE
-            if (write_wrapper(function_name))
+            if (write_wrapper_from_db(function_name))
             {
                 std::cout << "Error: could not write wrapper to file" << std::endl;
                 // exit with error
                 exit(1);
             };
 #else
-            std::cout << "Error: could not find wrapper" << std::endl;
-            // exit with error
-            exit(1);
+            compile_wrapper(function_name);
 #endif
         }
         // run the wrapper
