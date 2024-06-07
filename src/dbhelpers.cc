@@ -1,7 +1,7 @@
 #include <string>
 
 #include <sqlite3.h>
-#include <TiraLibCPP/utils.h>
+#include <HermesII/utils.h>
 
 static int callback(void *data, int argc, char **argv, char **azColName)
 {
@@ -17,7 +17,7 @@ static int callback(void *data, int argc, char **argv, char **azColName)
     return 0;
 }
 
-int write_wrapper(std::string function_name)
+int write_wrapper_from_db(std::string function_name)
 {
 
     // read databse path from environment variable

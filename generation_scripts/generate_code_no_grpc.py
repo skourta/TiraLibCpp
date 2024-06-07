@@ -134,12 +134,12 @@ cmakeFunctionTemplate = """
 add_executable({function} {function}.cpp)
 target_link_directories({function} PUBLIC ${{TIRAMISU_ROOT}}/build ${{HalideLib}} ${{TIRAMISU_ROOT}}/3rdParty/isl/build/lib {libTiraLibCPPPath})
 target_include_directories({function} PUBLIC ${{INCLUDES}})
-target_link_libraries({function} TiraLibCPP tiramisu tiramisu_auto_scheduler Halide isl sqlite3 ZLIB::ZLIB)
+target_link_libraries({function} TiraLibCPP tiramisu tiramisu_auto_scheduler Halide isl {sqlite3}} ZLIB::ZLIB)
 
 """
 
 
-def generate_function_from_cpp_file(original_str: str, abstracted: bool = False):
+def generate_function_from_cpp_file(original_str: str, abstracted: bool = False, use_sqlite3: bool = False):
     """
     Generate a function from a cpp file
 
@@ -181,19 +181,20 @@ def generate_functions(
     function_names: List[Tuple[str, str]],
     libTiraLibCPPPath: str,
     dest_path: str = "./src/functions",
+    use_sqlite3: bool = False,
 ):
     cmakeContent = cmakeHeaderTemplate
 
     # for name, body in tqdm(function_names):
     for name, body in function_names:
-        function_content = generate_function_from_cpp_file(body, True)
+        function_content = generate_function_from_cpp_file(body, True, use_sqlite3=use_sqlite3)
         function_path = Path(dest_path) / f"{name}.cpp"
 
         with open(function_path, "w") as f:
             f.write(function_content)
 
         cmakeContent += cmakeFunctionTemplate.format(
-            function=name, libTiraLibCPPPath=libTiraLibCPPPath
+            function=name, libTiraLibCPPPath=libTiraLibCPPPath, sqlite3="sqlite3" if use_sqlite3 else ""
         )
 
     cmakeContent += "\n"
@@ -247,6 +248,14 @@ def get_args():
         help="Path to the libTiraLibCPP.so file",
         default="/scratch/sk10691/workspace/grpc/server-tiramisu-grpc-2/tmp",
     )
+
+    parser.add_argument(
+        "--use-sqlite3",
+        help="Use sqlite3",
+        action="store_true",
+        type=bool,
+    )
+
     args = parser.parse_args()
     return args
 
