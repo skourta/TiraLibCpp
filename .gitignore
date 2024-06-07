@@ -4,8 +4,6 @@ src/functions
 src/switches
 tmp
 build.sh
-include/hermes_ii/functions.h
-include/hermes_ii/switches.h
 src/switchMap.cpp
 **/__pycache__
 sing

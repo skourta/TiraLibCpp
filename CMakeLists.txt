@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(HermesII)
+project(TiraLibCPP)
 
 set(CMAKE_VERBOSE_MAKEFILE on)
 
