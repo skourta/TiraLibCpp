@@ -1,8 +1,8 @@
 #include <tiramisu/tiramisu.h>
 #include <string>
 #include <regex>
-#include <HermesII/utils.h>
-#include <HermesII/dbhelpers.h>
+#include <TiraLibCPP/utils.h>
+#include <TiraLibCPP/dbhelpers.h>
 
 bool apply_action(std::string action_str, tiramisu::function *implicit_function, Result &result)
 {
@@ -307,12 +307,19 @@ Result schedule_str_to_result(std::string function_name, std::string schedule_st
         // write the wrapper to a file if it does not exist
         if (!file_exists(function_name + "_wrapper"))
         {
+// if USE_SQLITE is defined, write the wrapper to a file else raise an error
+#ifdef USE_SQLITE
             if (write_wrapper(function_name))
             {
                 std::cout << "Error: could not write wrapper to file" << std::endl;
                 // exit with error
                 exit(1);
             };
+#else
+            std::cout << "Error: could not find wrapper" << std::endl;
+            // exit with error
+            exit(1);
+#endif
         }
         // run the wrapper
         auto res_tuple = exec(wrapper_cmd.c_str());

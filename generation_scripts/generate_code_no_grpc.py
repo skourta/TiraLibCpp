@@ -15,7 +15,7 @@ template = """
 #include <tiramisu/tiramisu.h>
 #include <tiramisu/auto_scheduler/evaluator.h>
 #include <tiramisu/auto_scheduler/search_method.h>
-#include <HermesII/utils.h>
+#include <TiraLibCPP/utils.h>
 
 using namespace tiramisu;
 
@@ -86,11 +86,11 @@ int main(int argc, char *argv[])
 }}
 """
 
-templateWithEverythinginHermesII = """
+templateWithEverythinginTiraLibCPP = """
 #include <tiramisu/tiramisu.h>
 #include <tiramisu/auto_scheduler/evaluator.h>
 #include <tiramisu/auto_scheduler/search_method.h>
-#include <HermesII/utils.h>
+#include <TiraLibCPP/utils.h>
 
 using namespace tiramisu;
 
@@ -132,9 +132,9 @@ ${PROJECT_SOURCE_DIR}/include
 cmakeFunctionTemplate = """
 
 add_executable({function} {function}.cpp)
-target_link_directories({function} PUBLIC ${{TIRAMISU_ROOT}}/build ${{HalideLib}} ${{TIRAMISU_ROOT}}/3rdParty/isl/build/lib {libHermesIIPath})
+target_link_directories({function} PUBLIC ${{TIRAMISU_ROOT}}/build ${{HalideLib}} ${{TIRAMISU_ROOT}}/3rdParty/isl/build/lib {libTiraLibCPPPath})
 target_include_directories({function} PUBLIC ${{INCLUDES}})
-target_link_libraries({function} HermesII tiramisu tiramisu_auto_scheduler Halide isl sqlite3 ZLIB::ZLIB)
+target_link_libraries({function} TiraLibCPP tiramisu tiramisu_auto_scheduler Halide isl sqlite3 ZLIB::ZLIB)
 
 """
 
@@ -165,7 +165,7 @@ def generate_function_from_cpp_file(original_str: str, abstracted: bool = False)
 
     # fill the template
     if abstracted:
-        function_str = templateWithEverythinginHermesII.format(
+        function_str = templateWithEverythinginTiraLibCPP.format(
             name=name,
             body=body,
             buffers=buffers_vector,
@@ -179,7 +179,7 @@ def generate_function_from_cpp_file(original_str: str, abstracted: bool = False)
 
 def generate_functions(
     function_names: List[Tuple[str, str]],
-    libHermesIIPath: str,
+    libTiraLibCPPPath: str,
     dest_path: str = "./src/functions",
 ):
     cmakeContent = cmakeHeaderTemplate
@@ -193,7 +193,7 @@ def generate_functions(
             f.write(function_content)
 
         cmakeContent += cmakeFunctionTemplate.format(
-            function=name, libHermesIIPath=libHermesIIPath
+            function=name, libTiraLibCPPPath=libTiraLibCPPPath
         )
 
     cmakeContent += "\n"
@@ -240,11 +240,11 @@ def get_args():
         default=2,
     )
 
-    # libHermesII path
+    # libTiraLibCPP path
     parser.add_argument(
-        "--libHermesII-path",
+        "--libTiraLibCPP-path",
         type=str,
-        help="Path to the libHermesII.so file",
+        help="Path to the libTiraLibCPP.so file",
         default="/scratch/sk10691/workspace/grpc/server-tiramisu-grpc-2/tmp",
     )
     args = parser.parse_args()
@@ -372,56 +372,56 @@ if __name__ == "__main__":
 
     nbr_saves = 0
 
-    logging.info("Compiling HermesII library")
+    logging.info("Compiling TiraLibCPP library")
 
-    # check that cmakefile of src contains HermesII
+    # check that cmakefile of src contains TiraLibCPP
     cmake_src_path = Path("./src/CMakeLists.txt")
     with open(cmake_src_path, "r") as f:
         cmake_src_content = f.readlines()
 
     cmake_src_content = [
-        line.replace("# ", "") if "HermesII" in line else line
+        line.replace("# ", "") if "TiraLibCPP" in line else line
         for line in cmake_src_content
     ]
 
     with open(cmake_src_path, "w") as f:
         f.writelines(cmake_src_content)
 
-    # build HermesII and store it in the tmp folder
+    # build TiraLibCPP and store it in the tmp folder
     script = """
     rm -fr build && \
     mkdir build && \
     cd build && \
     cmake .. && \
-    make HermesII -j && \
+    make TiraLibCPP -j && \
     cd ..
-    cp build/src/libHermesII.a {libHermesII_path}
+    cp build/src/libTiraLibCPP.a {libTiraLibCPP_path}
     """
 
     try:
         start_time = time.time()
         output = subprocess.check_output(
-            script.format(libHermesII_path=args.libHermesII_path),
+            script.format(libTiraLibCPP_path=args.libTiraLibCPP_path),
             shell=True,
             stderr=subprocess.STDOUT,
         )
         end_time = time.time()
         logging.info(
-            f"Compilation time of HermesII in seconds: {end_time - start_time}"
+            f"Compilation time of TiraLibCPP in seconds: {end_time - start_time}"
         )
     except subprocess.CalledProcessError as e:
         output = e.output
         stderr = e.stderr
         stdout = e.stdout
-        logging.error("Error compiling HermesII")
+        logging.error("Error compiling TiraLibCPP")
         logging.error(output)
         logging.error(stderr)
         logging.error(stdout)
         raise e
 
-    # remove HermesII from the cmakefile of src
+    # remove TiraLibCPP from the cmakefile of src
     cmake_src_content = [
-        line if "HermesII" not in line else "# " + line for line in cmake_src_content
+        line if "TiraLibCPP" not in line else "# " + line for line in cmake_src_content
     ]
 
     with open(cmake_src_path, "w") as f:
@@ -431,7 +431,7 @@ if __name__ == "__main__":
         logging.info(f"Generating functions from {i} to {i + args.batch_size}")
         clean_functions()
         generate_functions(
-            functions_tuples[i : i + args.batch_size], args.libHermesII_path
+            functions_tuples[i : i + args.batch_size], args.libTiraLibCPP_path
         )
         logging.info("Compiling functions")
         start_time = time.time()

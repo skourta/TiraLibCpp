@@ -34,7 +34,7 @@ target_link_libraries(
   Halide 
   isl
   ZLIB::ZLIB
-  HermesII
+  TiraLibCPP
 )
 
 target_include_directories(actions_test PUBLIC ${INCLUDES})

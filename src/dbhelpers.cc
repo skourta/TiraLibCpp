@@ -1,7 +1,7 @@
 #include <string>
 
 #include <sqlite3.h>
-#include <HermesII/utils.h>
+#include <TiraLibCPP/utils.h>
 
 static int callback(void *data, int argc, char **argv, char **azColName)
 {

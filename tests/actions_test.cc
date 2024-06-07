@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <tiramisu/tiramisu.h>
-#include <HermesII/actions.h>
+#include <TiraLibCPP/actions.h>
 
 using namespace tiramisu;
 
@@ -68,7 +68,7 @@ std::string clean_halide_ir(std::string ir)
 }
 
 // Demonstrate some basic assertions.
-TEST(HermesTest, ParallelizationCheck)
+TEST(TiraLibCppTest, ParallelizationCheck)
 {
   std::string schedule = "P(L0,comps=['comp_blur'])";
   auto result = apply_schedule_blur(schedule);
@@ -120,7 +120,7 @@ TEST(HermesTest, ParallelizationCheck)
   EXPECT_EQ(clean_halide_ir(global::get_implicit_function()->get_halide_ir(buffers)), clean_halide_ir(halide_ir));
 }
 
-TEST(HermesTest, ParallelizationCheckL1)
+TEST(TiraLibCppTest, ParallelizationCheckL1)
 {
   std::string schedule = "P(L1,comps=['comp_blur'])";
   auto result = apply_schedule_blur(schedule);
@@ -172,7 +172,7 @@ TEST(HermesTest, ParallelizationCheckL1)
   EXPECT_EQ(clean_halide_ir(global::get_implicit_function()->get_halide_ir(buffers)), clean_halide_ir(halide_ir));
 }
 
-TEST(HermesTest, Tiling2D)
+TEST(TiraLibCppTest, Tiling2D)
 {
   std::string schedule = "T2(L0,L1,32,32,comps=['comp_blur'])";
   auto result = apply_schedule_blur(schedule);
@@ -225,7 +225,7 @@ TEST(HermesTest, Tiling2D)
             clean_halide_ir(halide_ir));
 }
 
-TEST(HermesTest, Tiling3D)
+TEST(TiraLibCppTest, Tiling3D)
 {
   std::string schedule = "T3(L0,L1,L2,32,32,32,comps=['comp_blur'])";
   auto result = apply_schedule_blur(schedule);
@@ -278,7 +278,7 @@ TEST(HermesTest, Tiling3D)
             clean_halide_ir(halide_ir));
 }
 
-TEST(HermesTest, Unrolling)
+TEST(TiraLibCppTest, Unrolling)
 {
   std::string schedule = "U(L2,32,comps=['comp_blur'])";
   auto result = apply_schedule_blur(schedule);
@@ -331,7 +331,7 @@ TEST(HermesTest, Unrolling)
             clean_halide_ir(halide_ir));
 }
 
-TEST(HermesTest, Interchange)
+TEST(TiraLibCppTest, Interchange)
 {
   std::string schedule = "I(L0,L1,comps=['comp_blur'])";
   auto result = apply_schedule_blur(schedule);
@@ -384,7 +384,7 @@ TEST(HermesTest, Interchange)
             clean_halide_ir(halide_ir));
 }
 
-TEST(HermesTest, Reversal)
+TEST(TiraLibCppTest, Reversal)
 {
   std::string schedule = "R(L2,comps=['comp_blur'])";
   auto result = apply_schedule_blur(schedule);
@@ -437,7 +437,7 @@ TEST(HermesTest, Reversal)
             clean_halide_ir(halide_ir));
 }
 
-TEST(HermesTest, IllegalAction)
+TEST(TiraLibCppTest, IllegalAction)
 {
   std::string schedule = "S(L0,L1,0,0,comps=['comp_blur'])";
   auto result = apply_schedule_blur(schedule);
@@ -479,7 +479,7 @@ std::tuple<Result, std::string> apply_schedule_skewing_sample(std::string schedu
   return std::tuple<Result, std::string>(result, halide_ir);
 }
 
-TEST(HermesTest, Skewing)
+TEST(TiraLibCppTest, Skewing)
 {
 
   std::string schedule = "S(L0,L1,0,0,comps=['comp00'])";
@@ -587,7 +587,7 @@ std::tuple<Result, std::string> apply_schedule_multi_comp_sample(std::string sch
   return std::tuple<Result, std::string>(result, halide_ir);
 }
 
-TEST(HermesTest, FusionIllegal)
+TEST(TiraLibCppTest, FusionIllegal)
 {
 
   std::string schedule = "F(L0,comps=['A_hat', 'x_temp'])";
@@ -664,7 +664,7 @@ TEST(HermesTest, FusionIllegal)
   EXPECT_EQ(resultInstance.legality, false);
 }
 
-TEST(HermesTest, FusionLegal)
+TEST(TiraLibCppTest, FusionLegal)
 {
 
   std::string schedule = "I(L0,L1,comps=['x_temp'])|F(L0,comps=['A_hat', 'x_temp'])";

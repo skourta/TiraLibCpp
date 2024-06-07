@@ -1,7 +1,7 @@
 #pragma once
 
 #include <tiramisu/tiramisu.h>
-#include <HermesII/utils.h>
+#include <TiraLibCPP/utils.h>
 
 bool apply_action(std::string action_str, tiramisu::function *implicit_function, Result &result);
 
