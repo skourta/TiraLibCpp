@@ -47,7 +47,6 @@ bool apply_action(std::string action_str, tiramisu::function *implicit_function,
         }
         break;
     }
-
     case 'I':
     {
         std::string regex_str = "I\\(L(\\d),L(\\d),comps=\\[([\\w', ]*)\\]\\)";
@@ -235,6 +234,55 @@ bool apply_action(std::string action_str, tiramisu::function *implicit_function,
         {
             throw std::invalid_argument("Tiling only supports 1D, 2D, and 3D");
         }
+        break;
+    }
+    case 'M':
+    {
+        std::string regex_str = "M\\(\\[([\\d, ]+)\\],comps=\\[([\\w', ]*)\\]\\)";
+        std::regex re(regex_str);
+        std::smatch match;
+        std::regex_search(action_str, match, re);
+        std::string factors_str = match[1];
+        factors_str.erase(std::remove_if(factors_str.begin(), factors_str.end(), isSingleQuoteOrWhiteSpace), factors_str.end());
+        std::vector<int> factors;
+        // go through the string and extract the factors
+        std::stringstream ss(factors_str);
+        int i;
+        while (ss >> i)
+        {
+            factors.push_back(i);
+            if (ss.peek() == ',')
+                ss.ignore();
+        }
+
+        // get the square root of the number of factors
+        int num_factors = factors.size();
+        int num_dims = (int)std::sqrt(num_factors);
+
+        // check that the number of factors is a perfect square
+        assert(num_dims * num_dims == num_factors);
+
+        // seperate the factors into the different dimensions
+        std::vector<std::vector<int>> factors_2d;
+        for (int i = 0; i < num_dims; i++)
+        {
+            std::vector<int> row;
+            for (int j = 0; j < num_dims; j++)
+            {
+                row.push_back(factors[i * num_dims + j]);
+            }
+            factors_2d.push_back(row);
+        }
+
+        std::string comps_str = match[2];
+        comps_str.erase(std::remove_if(comps_str.begin(), comps_str.end(), isSingleQuoteOrWhiteSpace), comps_str.end());
+        auto comps = get_comps(comps_str, implicit_function);
+
+        // check that there is only one computation
+        assert(comps.size() == 1);
+
+        // apply the transformation
+        comps[0]->matrix_transform(factors_2d);
         break;
     }
 
