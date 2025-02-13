@@ -17,7 +17,7 @@ git clone
 cd TiraLibCPP
 mkdir build
 cd build
-cmake .. -DTIRAMISU_ROOT=/path/to/tiramisu -DCMAKE_INSTALL_PREFIX=/path/to/install
+cmake .. -DTIRAMISU_INSTALL=/path/to/tiramisu -DCMAKE_INSTALL_PREFIX=/path/to/install
 make install
 ```
 
@@ -26,7 +26,7 @@ To build the tests, you need to pass the `-DBUILD_TESTS=ON` flag to the `cmake` 
 
 ```bash
 cd build
-cmake .. -DTIRAMISU_ROOT=/path/to/tiramisu -DCMAKE_INSTALL_PREFIX=/path/to/install -DBUILD_TESTS=ON
+cmake .. -DTIRAMISU_INSTALL=/path/to/tiramisu -DCMAKE_INSTALL_PREFIX=/path/to/install -DBUILD_TESTS=ON
 make
 ctest -C Release --test-dir ./tests
 ```
